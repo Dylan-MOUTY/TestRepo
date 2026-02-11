@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"groupieee/api"
 	"groupieee/server"
 	"log"
@@ -11,8 +10,11 @@ import (
 )
 
 func main() {
-	port := flag.String("port", ":8080", "Port du serveur")
-	flag.Parse()
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080" // pour le run en local
+	}
+	addr := ":" + port
 
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
@@ -24,5 +26,6 @@ func main() {
 		}
 	}()
 
-	log.Fatal(server.Start(*port))
+	log.Println("Server listening on", addr)
+	log.Fatal(server.Start(addr))
 }

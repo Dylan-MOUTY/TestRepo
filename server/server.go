@@ -1,43 +1,29 @@
-package server
+ppackage server
 
 import (
-	"fmt"
-	"net/http"
-	"path/filepath"
+    "log"
+    "net/http"
 
-	"groupieee/handlers"
-	"groupieee/utils"
+    "groupieee/handlers"
 )
 
 func Start(port string) error {
-	http.HandleFunc("/", handlers.Home)
-	http.HandleFunc("/artist", handlers.Artist)
+    http.HandleFunc("/", handlers.Home)
+    http.HandleFunc("/artist", handlers.Artist)
 
-	http.HandleFunc("/api/order", handlers.CreateOrder)
-	http.HandleFunc("/api/payment", handlers.ProcessPayment)
-	http.HandleFunc("/api/payment/paypal", handlers.ProcessPayPalPayment)
+    http.HandleFunc("/api/order", handlers.CreateOrder)
+    http.HandleFunc("/api/payment", handlers.ProcessPayment)
+    http.HandleFunc("/api/payment/paypal", handlers.ProcessPayPalPayment)
 
-	// Routes pour la gestion des comptes bancaires
-	http.HandleFunc("/api/bank-account/setup", handlers.SetupBankAccount)
-	http.HandleFunc("/api/bank-account", handlers.GetBankAccount)
+    http.HandleFunc("/api/bank-account/setup", handlers.SetupBankAccount)
+    http.HandleFunc("/api/bank-account", handlers.GetBankAccount)
 
-	// Routes pour les virements bancaires
-	http.HandleFunc("/api/payment/bank-transfer", handlers.ProcessBankTransfer)
-	http.HandleFunc("/api/payment/confirm-transfer", handlers.ConfirmBankTransfer)
+    http.HandleFunc("/api/payment/bank-transfer", handlers.ProcessBankTransfer)
+    http.HandleFunc("/api/payment/confirm-transfer", handlers.ConfirmBankTransfer)
 
-	// Servir les fichiers statiques
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+    http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+    http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 
-	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
-
-	certPath := filepath.FromSlash("certs/localhost.pem")
-	keyPath := filepath.FromSlash("certs/localhost-key.pem")
-	if err := utils.EnsureDevCert(certPath, keyPath); err != nil {
-		fmt.Println("[WARN] TLS indisponible, bascule en HTTP:", err)
-		fmt.Println("http://localhost" + port)
-		return http.ListenAndServe(port, nil)
-	}
-
-	fmt.Println("https://localhost" + port)
-	return http.ListenAndServeTLS(port, certPath, keyPath, nil)
+    log.Println("HTTP listening on", port)
+    return http.ListenAndServe(port, nil)
 }
